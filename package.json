@@ -1,0 +1,30 @@
+{
+  "name": "tstags",
+  "version": "0.1.0",
+  "description": "Ctags-like generator for TypeScript",
+  "main": "tstags/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Perlence/tstags.git"
+  },
+  "keywords": [
+    "typescript",
+    "ctags"
+  ],
+  "author": "Sviatoslav Abakumov <dust.harvesting@gmail.com>",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/Perlence/tstags/issues"
+  },
+  "homepage": "https://github.com/Perlence/tstags#readme",
+  "dependencies": {
+    "typescript": "^1.5.0-beta"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-tsc": "^0.10.1"
+  }
+}
