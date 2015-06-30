@@ -2,22 +2,22 @@ var gulp = require('gulp')
 var tsc = require('gulp-tsc')
 
 var locations = {
-  src: ['./**/*.ts', '!typings/**', '!node_modules/**'],
-  dest: './'
+  src: ['./src/**/*.ts', './src/typings/tsd.d.ts'],
+  dest: 'lib'
 }
+
+gulp.task('watch', function () {
+  return gulp.watch(locations.src, ['build'])
+})
 
 gulp.task('build', function () {
   return gulp.src(locations.src)
-
-    // Compile ALL typescript sources as CommonJS modules.
     .pipe(tsc({
-      module: 'CommonJS',
-      sourcemap: false,
-      emitError: false,
-      outDir: locations.dest
+      target: 'ES5',
+      declarationFiles: false,
+      noExternalResolve: true,
+      emitError: false
     }))
-
-    // Generate build outputs.
     .pipe(gulp.dest(locations.dest))
 })
 
