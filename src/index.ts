@@ -93,13 +93,13 @@ class Tags {
         return this.writeHeaders().concat(this.writeEntries()).join('\n')
     }
 
-    private writeHeaders(): string[] {
+    protected writeHeaders(): string[] {
         return this.headers().map(header =>
             `!${ header.header }\t${ header.value }\t${ header.help || '' }`
         )
     }
 
-    private writeEntries(): string[] {
+    protected writeEntries(): string[] {
         var sorted = this.entries
         if (this.sort)
             sorted = _.sortBy(this.entries, 'name')
