@@ -71,7 +71,7 @@ class Tags {
     entries: TagEntry[]
     sort: boolean
 
-    constructor(options?: {sort?: boolean}) {
+    constructor(options?: { sort?: boolean }) {
         options = options || {}
         this.sort = options.sort || false
         this.entries = []
@@ -80,12 +80,12 @@ class Tags {
     headers(): TagHeader[] {
         var sorted = this.sort ? '1' : '0'
         return [
-            {header: '_TAG_FILE_FORMAT', value: '2', help: 'extended format; --format=1 will not append ;" to lines'},
-            {header: '_TAG_FILE_SORTED', value: sorted, help: '0=unsorted, 1=sorted, 2=foldcase'},
-            {header: '_TAG_PROGRAM_AUTHOR', value: 'Sviatoslav Abakumov', help: 'dust.harvesting@gmail.com'},
-            {header: '_TAG_PROGRAM_NAME', value: 'tstags'},
-            {header: '_TAG_PROGRAM_URL', value: 'https://github.com/Perlence/tstags'},
-            {header: '_TAG_PROGRAM_VERSION', value: '0.1'},
+            { header: '_TAG_FILE_FORMAT', value: '2', help: 'extended format; --format=1 will not append ;" to lines' },
+            { header: '_TAG_FILE_SORTED', value: sorted, help: '0=unsorted, 1=sorted, 2=foldcase' },
+            { header: '_TAG_PROGRAM_AUTHOR', value: 'Sviatoslav Abakumov', help: 'dust.harvesting@gmail.com' },
+            { header: '_TAG_PROGRAM_NAME', value: 'tstags' },
+            { header: '_TAG_PROGRAM_URL', value: 'https://github.com/Perlence/tstags' },
+            { header: '_TAG_PROGRAM_VERSION', value: '0.1' },
         ]
     }
 
@@ -109,8 +109,8 @@ class Tags {
     }
 }
 
-function main() {
-    var args = docopt.docopt(usage, {version: pkg.version})
+export function main() {
+    var args = docopt.docopt(usage, { version: pkg.version })
     if (args['--version']) {
         console.log(pkg.version)
         return
@@ -130,7 +130,7 @@ function main() {
         filenames = filenames.concat(glob.sync('./**/*.ts'))
     }
 
-    var tags = new Tags({sort: args['--sort']})
+    var tags = new Tags({ sort: args['--sort'] })
     filenames.forEach(filename => {
         var text = fs.readFileSync(filename)
         var source = ts.createSourceFile(filename, text.toString(), languageVersion, '0')
@@ -197,7 +197,7 @@ function makeTags(tags: Tags, source: ts.SourceFile, options?: TaggingOptions) {
         ts.forEachChild(node, (node) => makeTag(node, parent))
     }
 
-    function extractLine(text, pos, end): {line: number; part: string} {
+    function extractLine(text, pos, end): { line: number; part: string } {
         scanner.setTextPos(pos)
         scanner.scan()
         var tokenPos = scanner.getTokenPos()

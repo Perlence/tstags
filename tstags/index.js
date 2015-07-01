@@ -95,6 +95,7 @@ function main() {
         fs.writeFileSync(filename, tags.toString());
     }
 }
+exports.main = main;
 function makeTags(tags, source, options) {
     options = options || {};
     var scanner = ts.createScanner(languageVersion, true, source.text);
