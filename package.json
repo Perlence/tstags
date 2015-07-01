@@ -2,7 +2,9 @@
   "name": "tstags",
   "version": "0.1.0",
   "description": "Ctags-like generator for TypeScript",
-  "main": "lib/main.js",
+  "bin": {
+    "tstags": "./bin/tstags.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -12,9 +14,13 @@
   },
   "keywords": [
     "typescript",
-    "ctags"
+    "ctags",
+    "vim"
   ],
-  "author": "Sviatoslav Abakumov <dust.harvesting@gmail.com>",
+  "author": {
+    "name": "Sviatoslav Abakumov",
+    "email": "dust.harvesting@gmail.com"
+  },
   "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/Perlence/tstags/issues"
