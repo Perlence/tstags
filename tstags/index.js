@@ -27,7 +27,7 @@ var scriptTargets = {
     ES3: 0 /* ES3 */,
     ES5: 1 /* ES5 */,
     ES6: 2 /* ES6 */,
-    Latest: 2 /* Latest */
+    Latest: 2 /* Latest */,
 };
 var Tags = (function () {
     function Tags(options) {
@@ -91,7 +91,7 @@ function main() {
         makeTags(tags, source, {
             languageVersion: languageVersion,
             fields: args['--fields'],
-            tagRelative: args['--tag-relative']
+            tagRelative: args['--tag-relative'],
         });
     });
     if (!tags.entries.length)
@@ -153,7 +153,7 @@ function makeTags(tags, source, options) {
         var line = ts.positionToLineAndCharacter(text, tokenPos).line;
         return {
             line: line,
-            text: escapeStringRegexp(lines[line - 1])
+            text: escapeStringRegexp(lines[line - 1]),
         };
     }
 }
