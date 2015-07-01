@@ -2,8 +2,8 @@ var gulp = require('gulp')
 var tsc = require('gulp-tsc')
 
 var locations = {
-  src: ['./src/**/*.ts', './src/typings/tsd.d.ts'],
-  dest: 'lib'
+  src: './tstags/**/*.ts',
+  dest: './tstags'
 }
 
 gulp.task('watch', function () {

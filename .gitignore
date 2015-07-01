@@ -23,7 +23,7 @@ node_modules
 npm-debug.log
 
 # Typings are handled by tsd
-src/typings/*/**
+tstags/typings/*/**
 
 # Ctags file
 tags
