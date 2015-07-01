@@ -14,6 +14,7 @@ gulp.task('build', function () {
   return gulp.src(locations.src)
     .pipe(tsc({
       target: 'ES5',
+      module: 'CommonJS',
       declarationFiles: false,
       noExternalResolve: true,
       emitError: false
