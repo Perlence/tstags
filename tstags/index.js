@@ -6,8 +6,7 @@ var glob = require('glob');
 var _ = require('lodash');
 var ts = require('typescript');
 var pkg = require('../package.json');
-var languageVersion = 1 /* ES5 */;
-var usage = "" + pkg.name + " v" + pkg.version + "\n\nUsage: tstags [options] [FILE]...\n\nOptions:\n  -h, --help         show this help message and exit\n  -v, --version      show version and exit\n  -f, --file [-]     write output to specified file. If file is \"-\", output is written to standard out\n  -R, --recursive    recurse into directories in the file list [default: false]\n  --fields <fields>  include selected extension fields\n  --list-kinds       list supported languages\n  --sort             sort tags [default: false]\n  --tag-relative     file paths should be relative to the directory containing the tag file [default: false]\n";
+var USAGE = "" + pkg.name + " v" + pkg.version + "\n\nUsage: tstags [options] [FILE]...\n\nOptions:\n  -h, --help          show this help message and exit\n  -v, --version       show version and exit\n  -f, --file [-]      write output to specified file. If file is \"-\", output is written to standard out\n  -R, --recursive     recurse into directories in the file list [default: false]\n  --fields <fields>   include selected extension fields\n  --list-kinds        list supported languages\n  --sort              sort tags [default: false]\n  --target <version>  targeting language version [default: ES6]\n  --tag-relative      file paths should be relative to the directory containing the tag file [default: false]\n";
 var fields = {};
 fields[124 /* Property */] = ['p', 'property'];
 fields[125 /* Method */] = ['m', 'method'];
@@ -24,6 +23,12 @@ fields[189 /* ModuleDeclaration */] = ['M', 'module'];
 fields[191 /* ImportDeclaration */] = ['I', 'import'];
 var kinds = _.uniq(_.map(_.values(fields), function (value) { return value.join('  '); }));
 kinds.push('c  const');
+var scriptTargets = {
+    ES3: 0 /* ES3 */,
+    ES5: 1 /* ES5 */,
+    ES6: 2 /* ES6 */,
+    Latest: 2 /* Latest */
+};
 var Tags = (function () {
     function Tags(options) {
         options = options || {};
@@ -56,7 +61,7 @@ var Tags = (function () {
     return Tags;
 })();
 function main() {
-    var args = docopt.docopt(usage, { version: pkg.version });
+    var args = docopt.docopt(USAGE, { version: pkg.version });
     if (args['--version']) {
         console.log(pkg.version);
         process.exit(0);
@@ -67,18 +72,24 @@ function main() {
     }
     // List of files or recursive flag must be given.
     if (!args['FILE'].length && !args['--recursive']) {
-        console.log(usage);
+        console.log(USAGE);
         process.exit(1);
     }
     var filenames = args['FILE'];
     if (args['--recursive']) {
         filenames = filenames.concat(glob.sync('./**/*.ts'));
     }
+    var languageVersion = scriptTargets[args['--target']];
+    if (languageVersion == null) {
+        console.error('Unsupported language version: ' + args['--target']);
+        process.exit(1);
+    }
     var tags = new Tags({ sort: args['--sort'] });
     filenames.forEach(function (filename) {
         var text = fs.readFileSync(filename);
         var source = ts.createSourceFile(filename, text.toString(), languageVersion, '0');
         makeTags(tags, source, {
+            languageVersion: languageVersion,
             fields: args['--fields'],
             tagRelative: args['--tag-relative']
         });
@@ -95,8 +106,8 @@ function main() {
 }
 exports.main = main;
 function makeTags(tags, source, options) {
-    options = options || {};
-    var scanner = ts.createScanner(languageVersion, true, source.text);
+    // options = options || {}
+    var scanner = ts.createScanner(options.languageVersion, true, source.text);
     var lines = splitLines(source.text);
     makeTag(source, undefined);
     function makeTag(node, parent) {

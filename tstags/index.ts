@@ -10,22 +10,21 @@ import ts = require('typescript')
 
 var pkg = require('../package.json')
 
-var languageVersion = ts.ScriptTarget.ES5
-
-var usage = `\
+var USAGE = `\
 ${ pkg.name } v${ pkg.version }
 
 Usage: tstags [options] [FILE]...
 
 Options:
-  -h, --help         show this help message and exit
-  -v, --version      show version and exit
-  -f, --file [-]     write output to specified file. If file is "-", output is written to standard out
-  -R, --recursive    recurse into directories in the file list [default: false]
-  --fields <fields>  include selected extension fields
-  --list-kinds       list supported languages
-  --sort             sort tags [default: false]
-  --tag-relative     file paths should be relative to the directory containing the tag file [default: false]
+  -h, --help          show this help message and exit
+  -v, --version       show version and exit
+  -f, --file [-]      write output to specified file. If file is "-", output is written to standard out
+  -R, --recursive     recurse into directories in the file list [default: false]
+  --fields <fields>   include selected extension fields
+  --list-kinds        list supported languages
+  --sort              sort tags [default: false]
+  --target <version>  targeting language version [default: ES6]
+  --tag-relative      file paths should be relative to the directory containing the tag file [default: false]
 `
 
 var fields = {}
@@ -46,7 +45,15 @@ fields[ts.SyntaxKind.ImportDeclaration] = ['I', 'import']
 var kinds = _.uniq(_.map(_.values(fields), value => value.join('  ')))
 kinds.push('c  const')
 
+var scriptTargets = {
+    ES3: ts.ScriptTarget.ES3,
+    ES5: ts.ScriptTarget.ES5,
+    ES6: ts.ScriptTarget.ES6,
+    Latest: ts.ScriptTarget.Latest,
+}
+
 interface TaggingOptions {
+    languageVersion?: ts.ScriptTarget
     fields?: string
     tagRelative?: boolean
 }
@@ -108,7 +115,7 @@ class Tags {
 }
 
 export function main() {
-    var args = docopt.docopt(usage, { version: pkg.version })
+    var args = docopt.docopt(USAGE, { version: pkg.version })
     if (args['--version']) {
         console.log(pkg.version)
         process.exit(0)
@@ -119,7 +126,7 @@ export function main() {
     }
     // List of files or recursive flag must be given.
     if (!args['FILE'].length && !args['--recursive']) {
-        console.log(usage)
+        console.log(USAGE)
         process.exit(1)
     }
 
@@ -128,12 +135,19 @@ export function main() {
         filenames = filenames.concat(glob.sync('./**/*.ts'))
     }
 
+    var languageVersion = scriptTargets[args['--target']]
+    if (languageVersion == null) {
+        console.error('Unsupported language version: ' + args['--target'])
+        process.exit(1)
+    }
+
     var tags = new Tags({ sort: args['--sort'] })
     filenames.forEach(filename => {
         var text = fs.readFileSync(filename)
         var source = ts.createSourceFile(filename, text.toString(), languageVersion, '0')
 
         makeTags(tags, source, {
+            languageVersion: languageVersion,
             fields: args['--fields'],
             tagRelative: args['--tag-relative'],
         })
@@ -152,9 +166,9 @@ export function main() {
 }
 
 function makeTags(tags: Tags, source: ts.SourceFile, options?: TaggingOptions) {
-    options = options || {}
+    // options = options || {}
 
-    var scanner = ts.createScanner(languageVersion, /* skipTrivia */ true, source.text)
+    var scanner = ts.createScanner(options.languageVersion, /* skipTrivia */ true, source.text)
     var lines = splitLines(source.text)
     makeTag(source, undefined)
 
