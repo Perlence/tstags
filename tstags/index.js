@@ -27,7 +27,7 @@ var scriptTargets = {
     ES3: 0 /* ES3 */,
     ES5: 1 /* ES5 */,
     ES6: 2 /* ES6 */,
-    Latest: 2 /* Latest */,
+    Latest: 2 /* Latest */
 };
 var Tags = (function () {
     function Tags(options) {
@@ -70,14 +70,19 @@ function main() {
         console.log(kinds.join('\n'));
         process.exit(0);
     }
-    // List of files or recursive flag must be given.
-    if (!args['FILE'].length && !args['--recursive']) {
+    // List of files must be given.
+    if (!args['FILE'].length) {
         console.log(USAGE);
         process.exit(1);
     }
-    var filenames = args['FILE'];
+    var names = args['FILE'];
+    var filenames;
     if (args['--recursive']) {
-        filenames = filenames.concat(glob.sync('./**/*.ts'));
+        // Get all *.ts files recursively in given directories.
+        filenames = _(names).map(function (dir) { return glob.sync(path.join(dir, '**', '*.ts')); }).flatten().value();
+    }
+    else {
+        filenames = names;
     }
     var languageVersion = scriptTargets[args['--target']];
     if (languageVersion == null) {
@@ -91,7 +96,7 @@ function main() {
         makeTags(tags, source, {
             languageVersion: languageVersion,
             fields: args['--fields'],
-            tagRelative: args['--tag-relative'],
+            tagRelative: args['--tag-relative']
         });
     });
     if (!tags.entries.length)
@@ -153,7 +158,7 @@ function makeTags(tags, source, options) {
         var line = ts.positionToLineAndCharacter(text, tokenPos).line;
         return {
             line: line,
-            text: escapeStringRegexp(lines[line - 1]),
+            text: escapeStringRegexp(lines[line - 1])
         };
     }
 }

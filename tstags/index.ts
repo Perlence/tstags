@@ -124,15 +124,23 @@ export function main() {
         console.log(kinds.join('\n'))
         process.exit(0)
     }
-    // List of files or recursive flag must be given.
-    if (!args['FILE'].length && !args['--recursive']) {
+    // List of files must be given.
+    if (!args['FILE'].length) {
         console.log(USAGE)
         process.exit(1)
     }
 
-    var filenames = args['FILE']
+    var names = args['FILE']
+    var filenames: string[]
     if (args['--recursive']) {
-        filenames = filenames.concat(glob.sync('./**/*.ts'))
+        // Get all *.ts files recursively in given directories.
+        filenames = _(names)
+            .map(dir => glob.sync(path.join(dir, '**', '*.ts')))
+            .flatten<string>()
+            .value()
+    }
+    else {
+        filenames = names
     }
 
     var languageVersion = scriptTargets[args['--target']]
