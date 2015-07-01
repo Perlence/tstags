@@ -113,16 +113,16 @@ export function main() {
     var args = docopt.docopt(usage, { version: pkg.version })
     if (args['--version']) {
         console.log(pkg.version)
-        return
+        process.exit(0)
     }
     if (args['--list-kinds']) {
         console.log(kinds.join('\n'))
-        return
+        process.exit(0)
     }
-    // List of files or recursive flag must be given
+    // List of files or recursive flag must be given.
     if (!args['FILE'].length && !args['--recursive']) {
         console.log(usage)
-        return
+        process.exit(1)
     }
 
     var filenames = args['FILE']
@@ -142,7 +142,7 @@ export function main() {
     })
 
     if (!tags.entries.length)
-        return
+        process.exit(0)
 
     if (args['--file'] === '-') {
         console.log(tags.toString())
