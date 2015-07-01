@@ -102,13 +102,7 @@ function makeTags(tags, source, options) {
     var lines = splitLines(source.text);
     makeTag(source, undefined);
     function makeTag(node, parent) {
-        var entry = {
-            name: undefined,
-            file: undefined,
-            address: undefined,
-            field: undefined,
-            line: undefined,
-        };
+        var entry = {};
         var field = fields[node.kind];
         if (field != null && (options.fields == null || options.fields.indexOf(field[0]) >= 0)) {
             switch (node.kind) {

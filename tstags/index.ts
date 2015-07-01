@@ -60,11 +60,11 @@ interface TagHeader {
 }
 
 interface TagEntry {
-    name: string
-    file: string
-    address: string
-    field: string
-    line: number
+    name?: string
+    file?: string
+    address?: string
+    field?: string
+    line?: number
 }
 
 class Tags {
@@ -161,12 +161,7 @@ function makeTags(tags: Tags, source: ts.SourceFile, options?: TaggingOptions) {
     makeTag(source, undefined)
 
     function makeTag(node, parent) {
-        var entry: TagEntry = {
-            name: undefined,
-            file: undefined,
-            address: undefined,
-            field: undefined,
-            line: undefined,
+        var entry: TagEntry = {}
         }
         var field = fields[node.kind]
         if (field != null && (options.fields == null || options.fields.indexOf(field[0]) >= 0)) {
