@@ -9,9 +9,6 @@ var pkg = require('../package.json');
 var languageVersion = 1 /* ES5 */;
 var usage = "" + pkg.name + " v" + pkg.version + "\n\nUsage: tstags [options] [FILE]...\n\nOptions:\n  -h, --help         show this help message and exit\n  -v, --version      show version and exit\n  -f, --file [-]     write output to specified file. If file is \"-\", output is written to standard out\n  -R, --recursive    recurse into directories in the file list [default: false]\n  --fields <fields>  include selected extension fields\n  --list-kinds       list supported languages\n  --sort             sort tags [default: false]\n  --tag-relative     file paths should be relative to the directory containing the tag file [default: false]\n";
 var fields = {};
-fields[68 /* ConstKeyword */] = ['c', 'const'];
-fields[76 /* ExportKeyword */] = ['x', 'export'];
-fields[192 /* ExportAssignment */] = ['x', 'export'];
 fields[124 /* Property */] = ['p', 'property'];
 fields[125 /* Method */] = ['m', 'method'];
 fields[126 /* Constructor */] = ['m', 'method'];
@@ -26,6 +23,7 @@ fields[188 /* EnumDeclaration */] = ['e', 'enum'];
 fields[189 /* ModuleDeclaration */] = ['M', 'module'];
 fields[191 /* ImportDeclaration */] = ['I', 'import'];
 var kinds = _.uniq(_.map(_.values(fields), function (value) { return value.join('  '); }));
+kinds.push('c  const');
 var Tags = (function () {
     function Tags(options) {
         options = options || {};
@@ -103,30 +101,39 @@ function makeTags(tags, source, options) {
     makeTag(source, undefined);
     function makeTag(node, parent) {
         var entry = {};
+        var newParent = parent;
+        switch (node.kind) {
+            case 126 /* Constructor */:
+                entry.name = 'constructor';
+                break;
+            case 189 /* ModuleDeclaration */:
+            case 185 /* ClassDeclaration */:
+            case 186 /* InterfaceDeclaration */:
+                newParent = node;
+                break;
+            case 183 /* VariableDeclaration */:
+                if (node.type != null && node.type.kind == 136 /* TypeLiteral */)
+                    newParent = node;
+                if (node.flags & 4096 /* Const */)
+                    entry.field = 'c';
+                break;
+        }
         var field = fields[node.kind];
         if (field != null && (options.fields == null || options.fields.indexOf(field[0]) >= 0)) {
-            switch (node.kind) {
-                case 126 /* Constructor */:
-                    entry.name = parent.name.text.trim() + '#constructor';
-                    break;
-                case 125 /* Method */:
-                case 127 /* GetAccessor */:
-                case 128 /* SetAccessor */:
-                    entry.name = parent.name.text.trim() + '#' + node.name.text.trim();
-                    break;
-            }
-            entry.field = field[0];
+            entry.field = entry.field || field[0];
             entry.name = entry.name || node.name.text;
-            entry.file = (options.tagRelative == true) ? source.filename : path.resolve(source.filename);
+            // Prepend module name to all first-level declarations and
+            // prepend class/interface name only to methods and
+            // properties.
+            if (parent != null && (parent.kind == 189 /* ModuleDeclaration */ || node.kind != 183 /* VariableDeclaration */))
+                entry.name = parent.name.text + '#' + entry.name;
+            entry.file = (options.tagRelative == true ? source.filename : path.resolve(source.filename));
             var firstLine = extractLine(source.text, node.pos, node.end);
             entry.address = "/^" + firstLine.text + "$/";
             entry.line = firstLine.line;
             tags.entries.push(entry);
         }
-        if (node.kind === 185 /* ClassDeclaration */ || node.kind === 186 /* InterfaceDeclaration */) {
-            parent = node;
-        }
-        ts.forEachChild(node, function (node) { return makeTag(node, parent); });
+        ts.forEachChild(node, function (node) { return makeTag(node, newParent); });
     }
     function extractLine(text, pos, end) {
         scanner.setTextPos(pos);

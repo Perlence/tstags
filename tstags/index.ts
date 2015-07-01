@@ -29,9 +29,6 @@ Options:
 `
 
 var fields = {}
-fields[ts.SyntaxKind.ConstKeyword] = ['c', 'const']
-fields[ts.SyntaxKind.ExportKeyword] = ['x', 'export']
-fields[ts.SyntaxKind.ExportAssignment] = ['x', 'export']
 fields[ts.SyntaxKind.Property] = ['p', 'property']
 fields[ts.SyntaxKind.Method] = ['m', 'method']
 fields[ts.SyntaxKind.Constructor] = ['m', 'method']
@@ -47,6 +44,7 @@ fields[ts.SyntaxKind.ModuleDeclaration] = ['M', 'module']
 fields[ts.SyntaxKind.ImportDeclaration] = ['I', 'import']
 
 var kinds = _.uniq(_.map(_.values(fields), value => value.join('  ')))
+kinds.push('c  const')
 
 interface TaggingOptions {
     fields?: string
@@ -162,23 +160,39 @@ function makeTags(tags: Tags, source: ts.SourceFile, options?: TaggingOptions) {
 
     function makeTag(node, parent) {
         var entry: TagEntry = {}
+        var newParent = parent
+
+        switch (node.kind) {
+        case ts.SyntaxKind.Constructor:
+            entry.name = 'constructor'
+            break
+        case ts.SyntaxKind.ModuleDeclaration:
+        case ts.SyntaxKind.ClassDeclaration:
+        case ts.SyntaxKind.InterfaceDeclaration:
+            newParent = node
+            break
+        case ts.SyntaxKind.VariableDeclaration:
+            if (node.type != null && node.type.kind == ts.SyntaxKind.TypeLiteral)
+                newParent = node
+            if (node.flags & ts.NodeFlags.Const)
+                entry.field = 'c'
+            break
         }
+
         var field = fields[node.kind]
         if (field != null && (options.fields == null || options.fields.indexOf(field[0]) >= 0)) {
-            switch (node.kind) {
-            case ts.SyntaxKind.Constructor:
-                entry.name = parent.name.text.trim() + '#constructor'
-                break
-            case ts.SyntaxKind.Method:
-            case ts.SyntaxKind.GetAccessor:
-            case ts.SyntaxKind.SetAccessor:
-                entry.name = parent.name.text.trim() + '#' + node.name.text.trim()
-                break
-            }
-
-            entry.field = field[0]
+            entry.field = entry.field || field[0]
             entry.name = entry.name || node.name.text
-            entry.file = (options.tagRelative == true) ? source.filename : path.resolve(source.filename)
+            // Prepend module name to all first-level declarations and
+            // prepend class/interface name only to methods and
+            // properties.
+            if (parent != null &&
+                    (parent.kind == ts.SyntaxKind.ModuleDeclaration ||
+                     node.kind != ts.SyntaxKind.VariableDeclaration))
+                entry.name = parent.name.text + '#' + entry.name
+            entry.file = (options.tagRelative == true ?
+                          source.filename :
+                          path.resolve(source.filename))
 
             var firstLine = extractLine(source.text, node.pos, node.end)
             entry.address = `/^${ firstLine.text }$/`
@@ -186,10 +200,8 @@ function makeTags(tags: Tags, source: ts.SourceFile, options?: TaggingOptions) {
 
             tags.entries.push(entry)
         }
-        if (node.kind === ts.SyntaxKind.ClassDeclaration || node.kind === ts.SyntaxKind.InterfaceDeclaration) {
-            parent = node
-        }
-        ts.forEachChild(node, (node) => makeTag(node, parent))
+
+        ts.forEachChild(node, (node) => makeTag(node, newParent))
     }
 
     function extractLine(text, pos, end): { line: number; text: string } {
