@@ -119,7 +119,7 @@ function makeTags(tags, source, options) {
             entry.name = entry.name || node.name.text;
             entry.file = (options.tagRelative == true) ? source.filename : path.resolve(source.filename);
             var firstLine = extractLine(source.text, node.pos, node.end);
-            entry.address = "/^" + firstLine.part + "$/";
+            entry.address = "/^" + firstLine.text + "$/";
             entry.line = firstLine.line;
             tags.entries.push(entry);
         }
@@ -135,7 +135,7 @@ function makeTags(tags, source, options) {
         var line = ts.positionToLineAndCharacter(text, tokenPos).line;
         return {
             line: line,
-            part: lines[line - 1],
+            text: escapeStringRegexp(lines[line - 1])
         };
     }
 }

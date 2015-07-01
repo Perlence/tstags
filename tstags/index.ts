@@ -181,7 +181,7 @@ function makeTags(tags: Tags, source: ts.SourceFile, options?: TaggingOptions) {
             entry.file = (options.tagRelative == true) ? source.filename : path.resolve(source.filename)
 
             var firstLine = extractLine(source.text, node.pos, node.end)
-            entry.address = `/^${ firstLine.part }$/`
+            entry.address = `/^${ firstLine.text }$/`
             entry.line = firstLine.line
 
             tags.entries.push(entry)
@@ -192,14 +192,14 @@ function makeTags(tags: Tags, source: ts.SourceFile, options?: TaggingOptions) {
         ts.forEachChild(node, (node) => makeTag(node, parent))
     }
 
-    function extractLine(text, pos, end): { line: number; part: string } {
+    function extractLine(text, pos, end): { line: number; text: string } {
         scanner.setTextPos(pos)
         scanner.scan()
         var tokenPos = scanner.getTokenPos()
         var line = ts.positionToLineAndCharacter(text, tokenPos).line
         return {
             line: line,
-            part: lines[line - 1],
+            text: escapeStringRegexp(lines[line - 1]),
         }
     }
 }
