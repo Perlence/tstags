@@ -1,6 +1,6 @@
 {
   "name": "tstags",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Ctags-like generator for TypeScript",
   "bin": {
     "tstags": "./bin/tstags.js"
@@ -30,7 +30,7 @@
     "docopt": "^0.6.2",
     "glob": "^5.0.12",
     "lodash": "^3.9.3",
-    "typescript": "~1.4.1"
+    "typescript": "~1.5.3"
   },
   "devDependencies": {
     "gulp": "^3.9.0",
